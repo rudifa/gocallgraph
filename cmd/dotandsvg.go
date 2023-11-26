@@ -11,18 +11,20 @@ import (
 
 // dotitCmd represents the showit command
 var dotitCmd = &cobra.Command{
-	Use:   "svg",
-	Short: "Convert the raw call graph to dot format and to svg file",
-	Long: `Convert the raw call graph to dot file (` + outputdotfile + `) and to a svg file (` + outputsvgfile + `),
-	for callers listed in the ` + callgraphrawfile + ` file.
+	Use:   "dot",
+	Short: "Convert the raw call graph to dot file and to svg file",
+	Long: `Convert a subset of the raw call graph to a grephviz dot file (` + outputdotfile + `).
+	Also convert the dot file to a svg file (` + outputsvgfile + `) and display it in browser.
 
-	You should look up callers of interest to you in the file ./tmp/callgraph.raw and
+	The subset of the raw call graph is defined by the files ` + callersfile + ` and ` + calleesfile + `.
+
+	You should look up callers and callees of interest in the file ./tmp/callgraph.raw and
 	copy them to the file ./tmp/callers.txt.
 
 	Be careful to copy the full function name, including the package name,
 	e.g. 'github.com/rudifa/gocallgraph/cmd.Execute'.
 
-	View the svg file with show command, with LiveServer or with 'open .tmp/callgraph.svg'.`,
+	Display the svg file with show command, with LiveServer or with 'open .tmp/callgraph.svg'.`,
 	Aliases: []string{"dotsvg"},
 	Run: func(cmd *cobra.Command, args []string) {
 
