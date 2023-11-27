@@ -3,45 +3,21 @@ package util
 import (
 	"bufio"
 	"errors"
-	"log"
 	"os"
+	"regexp"
 )
 
 type StringList struct {
 	list []string
 }
 
-// init from a file
-func (c *StringList) initFromFile(filename string) {
-	file, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		// parse line and add to list
-		// assuming Calllist has a method Add and a way to parse a line into a call
-		// call := parseLineToCall(scanner.Text())
-		// c.Add(call)
-		c.Add(scanner.Text())
-	}
-
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func (c *StringList) Add(call string) {
-	c.list = append(c.list, call)
-}
-
-func New() *StringList {
+// NewStringList returns an instance of StringList
+func NewStringList() *StringList {
 	return &StringList{}
 }
 
-func NewFromFile(filename string) (*StringList, error) {
+// NewStringListFromFile returns an instance of StringList from a file
+func NewStringListFromFile(filename string) (*StringList, error) {
 	sl := &StringList{}
 	file, err := os.Open(filename)
 	if err != nil {
@@ -61,7 +37,8 @@ func NewFromFile(filename string) (*StringList, error) {
 	return sl, nil
 }
 
-func NewFrom(slice []string) (*StringList, error) {
+// NewFrom returns an instance of StringList from a slice
+func NewStringListFromSlice(slice []string) (*StringList, error) {
 	if slice == nil {
 		return nil, errors.New("input slice cannot be nil")
 	}
@@ -69,4 +46,53 @@ func NewFrom(slice []string) (*StringList, error) {
 		list: slice,
 	}
 	return sl, nil
+}
+
+// Add adds a string to the list
+func (c *StringList) Add(call string) {
+	c.list = append(c.list, call)
+}
+
+// List returns the list
+func (c *StringList) List() []string {
+	return c.list
+}
+
+// Contains returns true if the list contains the string
+func (c *StringList) Contains(s string) bool {
+	for _, v := range c.list {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
+// AllMatching returns a list of strings matching the pattern
+func (c *StringList) AllMatching(pattern string) []string {
+	matches := make([]string, 0)
+	for _, v := range c.list {
+		if Matches(pattern, v) {
+			matches = append(matches, v)
+		}
+	}
+	return matches
+}
+
+// FirstMatching returns the first string matching the pattern
+func (c *StringList) FirstMatching(pattern string) string {
+	for _, v := range c.list {
+		if Matches(pattern, v) {
+			return v
+		}
+	}
+	return ""
+}
+
+// should go into strings util
+
+// Matches returns true if the string matches the pattern
+func Matches(patterrn, s string) bool {
+	match, _ := regexp.MatchString(patterrn, s)
+	return match
 }

@@ -1,0 +1,4 @@
+github.com/rudifa/gocallgraph.init  --static-0:0--> github.com/rudifa/gocallgraph/cmd.init
+github.com/rudifa/gocallgraph.main  --static-9:13-->    github.com/rudifa/gocallgraph/cmd.Execute
+github.com/rudifa/gocallgraph/cmd.Execute   --static-49:24-->   (*github.com/spf13/cobra.Command).Execute
+github.com/rudifa/gocallgraph/cmd.Execute   --static-51:10-->   os.Exit
