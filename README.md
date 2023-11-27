@@ -4,7 +4,7 @@ A prototype tool to generate a call graph for a Go program.
 
 Some manual assembly required.
 
-## Usage
+## Usage - preliminary, not up to date
 
 ```
 Gets call graph of a go module, converts it to dot and displays it...

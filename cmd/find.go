@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/rudifa/gocallgraph/pkg/util"
 	"github.com/spf13/cobra"
 )
 
@@ -16,23 +17,43 @@ var findCmd = &cobra.Command{
 	Long: `Find a function in the raw callgraph
 that matches the given string.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("find called", regex)
+		fmt.Println("find called with pattern:", pattern)
+
+		//func FindMatchingNodes(callgrapgfile string, matching string) ([]string, error) {
+
+		// found, err := util.FindMatchingNodes("testdata/callgraph.raw", pattern)
+
+		found, err := FindFunctionInRawCallgraph(pattern, callgraphrawfile)
+
+		if err != nil {
+			fmt.Println("error:", err)
+			return
+		}
+
+		fmt.Println("found:", len(found))
+		for _, f := range found {
+			fmt.Println(f)
+		}
 	},
 }
 
-var regex string
+var pattern string
 
 func init() {
 	rootCmd.AddCommand(findCmd)
 
 	// add -r --regex option
-	findCmd.Flags().StringVarP(&regex, "regex", "r", "", "regex pattern to match")
+	findCmd.Flags().StringVarP(&pattern, "pattern", "p", "", "regex pattern to match")
 
-	findCmd.MarkFlagRequired("regex")
+	findCmd.MarkFlagRequired("pattern")
 }
 
-// FindFunctionInRawCallgraph finds a function in the raw callgraph
-// that matches the given string.
-func FindFunctionInRawCallgraph(regex string, filename string) {
-	fmt.Println("FindFunctionInRawCallgraph called", regex, filename)
+// FindFunctionInRawCallgraph finds functions in the raw callgraph
+// that match the given pattern.
+func FindFunctionInRawCallgraph(pattern string, filename string) ([]string, error) {
+	// fmt.Println("FindFunctionInRawCallgraph called", pattern, filename)
+
+	matched, err := util.FindMatchingNodes(filename, pattern)
+
+	return matched, err
 }
