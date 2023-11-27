@@ -10,7 +10,7 @@ import (
 	"github.com/rudifa/goutil/files"
 )
 
-// DotToSvgAndShow converts the dot file to svg
+// DotToSvg converts the dot file to svg
 func DotToSvg(dotfile, svgfile string) {
 
 	// Run the dot command

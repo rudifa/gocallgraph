@@ -1,6 +1,7 @@
 /*
 Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
 */
+
 package cmd
 
 import (
@@ -21,6 +22,7 @@ const outputcypherfile = ".tmp/callgraph.cypher"
 
 const callgraphraw10file = ".tmp/callgraph.10.raw"
 
+// CmdVerbose enables verbose output
 var CmdVerbose bool = false
 
 // rootCmd represents the base command when called without any subcommands
@@ -30,7 +32,7 @@ var rootCmd = &cobra.Command{
 	Long:  `Gets call graph of a go module, converts it to dot and displays it...`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if CmdVerbose {
-			// propagate verbose flag to util
+			// propagate CmdVerbose flag to util
 			util.Verbose = true
 			log.Println("Verbose mode is enabled")
 		}

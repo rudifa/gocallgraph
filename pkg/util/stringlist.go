@@ -1,3 +1,7 @@
+/*
+Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
+*/
+
 package util
 
 import (
@@ -7,16 +11,17 @@ import (
 	"regexp"
 )
 
+// StringList wraps a string slice and provides methods to manipulate it
 type StringList struct {
 	list []string
 }
 
-// NewStringList returns an instance of StringList
+// NewStringList returns an instance of empty StringList
 func NewStringList() *StringList {
 	return &StringList{}
 }
 
-// NewStringListFromFile returns an instance of StringList from a file
+// NewStringListFromFile returns an instance of StringList initialized from a file
 func NewStringListFromFile(filename string) (*StringList, error) {
 	sl := &StringList{}
 	file, err := os.Open(filename)
@@ -37,7 +42,7 @@ func NewStringListFromFile(filename string) (*StringList, error) {
 	return sl, nil
 }
 
-// NewFrom returns an instance of StringList from a slice
+// NewStringListFromSlice returns an instance of StringList initialized from a slice
 func NewStringListFromSlice(slice []string) (*StringList, error) {
 	if slice == nil {
 		return nil, errors.New("input slice cannot be nil")

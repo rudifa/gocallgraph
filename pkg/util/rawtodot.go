@@ -15,6 +15,7 @@ import (
 	"github.com/golang-collections/collections/set"
 )
 
+// RawToDot converts the callgraph.raw file to a DOT file, filtering by callers and callees
 func RawToDot(callgraphfile, callersfile, calleesfile, outputdotfile string) error {
 
 	// Get callers of interest from the callers file

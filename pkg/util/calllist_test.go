@@ -1,3 +1,7 @@
+/*
+Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
+*/
+
 package util
 
 import (

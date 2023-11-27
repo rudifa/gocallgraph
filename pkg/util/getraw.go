@@ -1,6 +1,7 @@
 /*
 Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
 */
+
 package util
 
 import (
@@ -12,6 +13,7 @@ import (
 	"github.com/rudifa/goutil/files"
 )
 
+// GetRawCallgraph runs the callgraph command and writes the output to the filepath
 func GetRawCallgraph(filepath string) {
 
 	// Run the callgraph command

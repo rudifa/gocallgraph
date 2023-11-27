@@ -1,6 +1,7 @@
 /*
 Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
 */
+
 package util
 
 // FindMatchingNodes finds all nodes in the callgraph that match the given pattern.
