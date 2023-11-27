@@ -38,5 +38,5 @@ func GetRawCallgraph(filepath string) {
 		log.Fatal("*** GetRawCallgraph error:", err)
 	}
 
-	log.Printf("Wrote callgraph to %v", filepath)
+	log.Printf("Wrote the raw callgraph file %v", filepath)
 }

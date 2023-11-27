@@ -11,6 +11,8 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/golang-collections/collections/set"
 )
 
 func RawToDot(callgraphfile, callersfile, calleesfile, outputdotfile string) error {
@@ -77,11 +79,13 @@ func callgraphRawToTuples(filename string) ([][2]string, error) {
 			return tuples, err
 		}
 
-		fragments := strings.Split(strings.TrimSpace(line), "\t")
-		if len(fragments) == 3 {
-			// append the tuple to the array
-			tuples = append(tuples, [2]string{fragments[0], fragments[2]})
+		caller, callee, err := parseLine(line)
+		if err != nil {
+			// ignore error
+			continue
 		}
+		// append the tuple to the array
+		tuples = append(tuples, [2]string{caller, callee})
 	}
 
 	return tuples, err
@@ -302,4 +306,45 @@ func getTuplesForCallee(callee string, tuples [][2]string) [][2]string {
 		}
 	}
 	return result
+}
+
+// parseLine parses a line of the callgraph.raw file and returns the caller and callee
+func parseLine(line string) (string, string, error) {
+	fragments := strings.Split(strings.TrimSpace(line), "\t")
+	if len(fragments) != 3 {
+		return "", "", fmt.Errorf("invalid line format")
+	}
+	return fragments[0], fragments[2], nil
+}
+
+func extractNodes(filename string) ([]string, error) {
+	nodes := set.New()
+	file, err := os.Open(filename)
+	if err != nil {
+		return []string{}, err
+	}
+	defer file.Close()
+
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			// ignore error
+			continue
+		}
+
+		caller, callee, err := parseLine(line)
+		if err != nil {
+			// ignore error
+			continue
+		}
+		nodes.Insert(caller)
+		nodes.Insert(callee)
+	}
+
+	list := make([]string, 0)
+	return list, err
 }
