@@ -13,10 +13,13 @@ Usage:
   gocallgraph [command]
 
 Available Commands:
+  add         Add a new function to visualize, as a caller or as a target.
+  dot         Convert the raw call graph to dot file and to svg file
+  find        Find a function in the raw callgraph
   help        Help about any command
   raw         Get the raw call for the currrent module
   show        Display the svg file in browser
-  svg         Convert the raw call graph to dot format and to svg file
+  sub         Remove a function to visualize, as a caller or as a target.
 
 Flags:
   -h, --help      help for gocallgraph
