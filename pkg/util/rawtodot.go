@@ -25,7 +25,7 @@ func RawToDot(callgraphfile, callersfile, targetsfile string, horizontal bool, o
 	}
 
 	// print the callers
-	log.Println("Callers:")
+	log.Println("callers:")
 	for _, caller := range callers {
 		log.Println(caller)
 	}
