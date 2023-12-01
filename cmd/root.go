@@ -15,12 +15,9 @@ import (
 const tmpdir = ".tmp"
 const callgraphrawfile = ".tmp/callgraph.raw"
 const callersfile = ".tmp/callers.txt"
-const calleesfile = ".tmp/callees.txt"
+const targetsfile = ".tmp/targets.txt"
 const outputdotfile = ".tmp/callgraph.dot"
 const outputsvgfile = ".tmp/callgraph.svg"
-const outputcypherfile = ".tmp/callgraph.cypher"
-
-const callgraphraw10file = ".tmp/callgraph.10.raw"
 
 // CmdVerbose enables verbose output
 var CmdVerbose bool = false
@@ -29,7 +26,15 @@ var CmdVerbose bool = false
 var rootCmd = &cobra.Command{
 	Use:   "gocallgraph",
 	Short: "Gets call graph of a go module, converts it to dot and displays it",
-	Long:  `Gets call graph of a go module, converts it to dot and displays it...`,
+	Long: `Gets call graph of a go module, converts it to dot and displays it...
+
+	You might need to install graphviz: https://graphviz.org/download/
+	and callgraph: https://pkg.go.dev/golang.org/x/tools/go/callgraph
+
+	For brevity you can create a local alias
+	  alias gcg=gocallgraph
+	  alias gcg='go run'
+	as appropriate.`,
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		if CmdVerbose {
 			// propagate CmdVerbose flag to util

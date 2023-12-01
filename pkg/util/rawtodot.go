@@ -15,52 +15,52 @@ import (
 	"github.com/golang-collections/collections/set"
 )
 
-// RawToDot converts the callgraph.raw file to a DOT file, filtering by callers and callees
-func RawToDot(callgraphfile, callersfile, calleesfile, outputdotfile string) error {
+// RawToDot converts the callgraph.raw file to a DOT file, filtering by callers and targets
+func RawToDot(callgraphfile, callersfile, targetsfile string, horizontal bool, outputdotfile string) error {
 
 	// Get callers of interest from the callers file
 	callers, err := processCallersFile(callersfile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// print the callers
-	log.Println("Callers:")
+	log.Println("callers:")
 	for _, caller := range callers {
 		log.Println(caller)
 	}
 
-	// Get callees of interest from the callees file
-	callees, err := processCalleesFile(calleesfile)
+	// Get targets of interest from the targets file
+	targets, err := processtargetsFile(targetsfile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	// print the callees
-	log.Println("Callees:")
-	for _, callee := range callees {
-		log.Println(callee)
+	// print the targets
+	log.Println("targets:")
+	for _, target := range targets {
+		log.Println(target)
 	}
 
-	// Get all tuples (caller, callee) from the callgraph.raw file
+	// Get all tuples (caller, target) from the callgraph.raw file
 	tuples, err := callgraphRawToTuples(callgraphfile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	extractRootsAndLeavesToFiles(tuples)
 
 	// Create the DOT file where nodes are callers
 	// and edges defined by the corresponding tuples
-	err = generateDotFile(tuples, callers, callees, outputdotfile)
+	err = generateDotFile(tuples, callers, targets, horizontal, outputdotfile)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	return nil
 }
 
-// callgraphRawToTuples reads the calltree file and returns an array of tuples (caller, callee)
+// callgraphRawToTuples reads the calltree file and returns an array of tuples (caller, target)
 func callgraphRawToTuples(filename string) ([][2]string, error) {
 	tuples := make([][2]string, 0)
 
@@ -80,13 +80,13 @@ func callgraphRawToTuples(filename string) ([][2]string, error) {
 			return tuples, err
 		}
 
-		caller, callee, err := parseLine(line)
+		caller, target, err := parseLine(line)
 		if err != nil {
 			// ignore error
 			continue
 		}
 		// append the tuple to the array
-		tuples = append(tuples, [2]string{caller, callee})
+		tuples = append(tuples, [2]string{caller, target})
 	}
 
 	return tuples, err
@@ -116,13 +116,13 @@ func processCallersFile(filename string) ([]string, error) {
 	return callers, err
 }
 
-// processCalleesFile reads the callers file and returna an array of callees
-func processCalleesFile(filename string) ([]string, error) {
+// processtargetsFile reads the callers file and returna an array of targets
+func processtargetsFile(filename string) ([]string, error) {
 
-	callees := make([]string, 0)
+	targets := make([]string, 0)
 	file, err := os.Open(filename)
 	if err != nil {
-		return callees, err
+		return targets, err
 	}
 	defer file.Close()
 
@@ -133,46 +133,46 @@ func processCalleesFile(filename string) ([]string, error) {
 			break
 		}
 		if err != nil {
-			return callees, err
+			return targets, err
 		}
-		callees = append(callees, strings.TrimSpace(line))
+		targets = append(targets, strings.TrimSpace(line))
 	}
 
-	return callees, err
+	return targets, err
 }
 
 // extractRootsAndLeavesToFiles finds all the roots and all the leaves of the calltree
 // and writes them to the roots.txt and leaves.txt
 func extractRootsAndLeavesToFiles(tuples [][2]string) {
 
-	// a root is a caller that is not a callee
-	// a leaf is a callee that is not a caller
+	// a root is a caller that is not a target
+	// a leaf is a target that is not a caller
 
 	roots := make([]string, 0)
 	leaves := make([]string, 0)
 
 	// should use maps instead of slices to extract roots and leaves
 
-	// make maps of callers and callees to be used as sets
+	// make maps of callers and targets to be used as sets
 
 	callers := make(map[string]bool)
-	callees := make(map[string]bool)
+	targets := make(map[string]bool)
 
 	for _, tuple := range tuples {
 		callers[tuple[0]] = true
-		callees[tuple[1]] = true
+		targets[tuple[1]] = true
 	}
 
-	// loop over the callees and check if they are not in the callers
-	for callee := range callees {
-		if _, ok := callers[callee]; !ok {
-			leaves = append(leaves, callee)
+	// loop over the targets and check if they are not in the callers
+	for target := range targets {
+		if _, ok := callers[target]; !ok {
+			leaves = append(leaves, target)
 		}
 	}
 
-	// loop over the callers and check if they are not in the callees
+	// loop over the callers and check if they are not in the targets
 	for caller := range callers {
-		if _, ok := callees[caller]; !ok {
+		if _, ok := targets[caller]; !ok {
 			roots = append(roots, caller)
 		}
 	}
@@ -227,7 +227,7 @@ func extractRootsAndLeavesToFiles(tuples [][2]string) {
 }
 
 // generateDotFile writes the outputdotfile with the data from the tuples and callers
-func generateDotFile(tuples [][2]string, callers []string, callees []string, outputdotfile string) error {
+func generateDotFile(tuples [][2]string, callers, targets []string, horizontal bool, outputdotfile string) error {
 	dotFile, err := os.Create(outputdotfile)
 	if err != nil {
 		return err
@@ -237,8 +237,13 @@ func generateDotFile(tuples [][2]string, callers []string, callees []string, out
 	writer := bufio.NewWriter(dotFile)
 	defer writer.Flush()
 
-	// write the header
-	_, err = writer.WriteString("digraph GraphName {\n\trankdir=TB;\n")
+	// write the dot dotHeader
+	rankdir := "TB"
+	if horizontal {
+		rankdir = "LR"
+	}
+	dotHeader := fmt.Sprintf("digraph GraphName {\n\trankdir=%s;\n", rankdir)
+	_, err = writer.WriteString(dotHeader)
 	if err != nil {
 		return err
 	}
@@ -260,16 +265,16 @@ func generateDotFile(tuples [][2]string, callers []string, callees []string, out
 		}
 	}
 
-	// loop over callees and write edge lines for each callee
-	for _, callee := range callees {
-		_, err = writer.WriteString(fmt.Sprintf("\t\"%s\"[shape=box, style=\"rounded,filled\", fillcolor=\"aquamarine\", color=black];\n", callee))
+	// loop over targets and write edge lines for each target
+	for _, target := range targets {
+		_, err = writer.WriteString(fmt.Sprintf("\t\"%s\"[shape=box, style=\"rounded,filled\", fillcolor=\"aquamarine\", color=black];\n", target))
 
 		if err != nil {
 			return err
 		}
-		calleetuples := getTuplesForCallee(callee, tuples)
+		targettuples := getTuplesFortarget(target, tuples)
 		// loop over the tuples and write the edge lines
-		for _, tuple := range calleetuples {
+		for _, tuple := range targettuples {
 			_, err = writer.WriteString(fmt.Sprintf("\t\"%s\" -> \"%s\";\n", tuple[0], tuple[1]))
 			if err != nil {
 				return err
@@ -277,7 +282,7 @@ func generateDotFile(tuples [][2]string, callers []string, callees []string, out
 		}
 	}
 
-	// write the footer
+	// write the dot footer
 	_, err = writer.WriteString("}")
 	if err != nil {
 		return err
@@ -298,18 +303,18 @@ func getTuplesForCaller(caller string, tuples [][2]string) [][2]string {
 	return result
 }
 
-// getTuplesForCallee returns an array of tuples where the callee is the second element of the tuple
-func getTuplesForCallee(callee string, tuples [][2]string) [][2]string {
+// getTuplesFortarget returns an array of tuples where the target is the second element of the tuple
+func getTuplesFortarget(target string, tuples [][2]string) [][2]string {
 	result := make([][2]string, 0)
 	for _, tuple := range tuples {
-		if tuple[1] == callee {
+		if tuple[1] == target {
 			result = append(result, tuple)
 		}
 	}
 	return result
 }
 
-// parseLine parses a line of the callgraph.raw file and returns the caller and callee
+// parseLine parses a line of the callgraph.raw file and returns the caller and target
 func parseLine(line string) (string, string, error) {
 	fragments := strings.Split(strings.TrimSpace(line), "\t")
 	if len(fragments) != 3 {
@@ -337,13 +342,13 @@ func extractNodes(filename string) ([]string, error) {
 			continue
 		}
 
-		caller, callee, err := parseLine(line)
+		caller, target, err := parseLine(line)
 		if err != nil {
 			// ignore error
 			continue
 		}
 		nodes.Insert(caller)
-		nodes.Insert(callee)
+		nodes.Insert(target)
 	}
 
 	list := make([]string, 0)

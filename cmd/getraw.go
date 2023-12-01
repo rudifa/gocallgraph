@@ -20,6 +20,8 @@ var getcallgraphCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		files.EnsureDirectoryExists(tmpdir)
+		files.CreateFileIfNotExists(callersfile)
+		files.CreateFileIfNotExists(targetsfile)
 
 		util.GetRawCallgraph(callgraphrawfile)
 	},

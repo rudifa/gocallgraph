@@ -11,7 +11,7 @@ import (
 )
 
 // CallList contails a list of strings
-// that contain space separated triplets (caller, call, callee)
+// that contain space separated triplets (caller, call, target)
 type CallList struct {
 	StringList // CallList is a StringList with more methods
 }
@@ -48,7 +48,7 @@ func NewCallListFromStrings(strings []string) *CallList {
 	return callList
 }
 
-// Nodes returns a list of nodes (callers and callees)
+// Nodes returns a list of nodes (callers and targets)
 func (c *CallList) Nodes() *StringList {
 	// init a Set
 	nodes := set.New()
@@ -57,7 +57,7 @@ func (c *CallList) Nodes() *StringList {
 	for _, line := range c.List() {
 		parts := strings.Fields(line)
 		if len(parts) >= 3 {
-			// add caller and callee to the set
+			// add caller and target to the set
 			nodes.Insert(parts[0])
 			nodes.Insert(parts[2])
 		}
