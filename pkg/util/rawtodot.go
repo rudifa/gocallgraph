@@ -31,7 +31,7 @@ func RawToDot(callgraphfile, callersfile, targetsfile string, horizontal bool, o
 	}
 
 	// Get targets of interest from the targets file
-	targets, err := processtargetsFile(targetsfile)
+	targets, err := processTargetsFile(targetsfile)
 	if err != nil {
 		return err
 	}
@@ -116,8 +116,8 @@ func processCallersFile(filename string) ([]string, error) {
 	return callers, err
 }
 
-// processtargetsFile reads the callers file and returna an array of targets
-func processtargetsFile(filename string) ([]string, error) {
+// processTargetsFile reads the callers file and returna an array of targets
+func processTargetsFile(filename string) ([]string, error) {
 
 	targets := make([]string, 0)
 	file, err := os.Open(filename)
@@ -248,8 +248,13 @@ func generateDotFile(tuples [][2]string, callers, targets []string, horizontal b
 		return err
 	}
 
+	done := set.New()
+
 	// loop over callers and write edge lines for each caller
 	for _, caller := range callers {
+		if caller == "" {
+			continue
+		}
 		_, err = writer.WriteString(fmt.Sprintf("\t\"%s\"[shape=box, style=\"rounded,filled\", fillcolor=\"yellow\", color=black];\n", caller))
 
 		if err != nil {
@@ -258,6 +263,11 @@ func generateDotFile(tuples [][2]string, callers, targets []string, horizontal b
 		callertuples := getTuplesForCaller(caller, tuples)
 		// loop over the tuples and write the edge lines
 		for _, tuple := range callertuples {
+			if done.Has(tuple) {
+				continue
+			}
+			done.Insert(tuple)
+
 			_, err = writer.WriteString(fmt.Sprintf("\t\"%s\" -> \"%s\";\n", tuple[0], tuple[1]))
 			if err != nil {
 				return err
@@ -267,14 +277,24 @@ func generateDotFile(tuples [][2]string, callers, targets []string, horizontal b
 
 	// loop over targets and write edge lines for each target
 	for _, target := range targets {
+		if target == "" {
+			continue
+		}
+
 		_, err = writer.WriteString(fmt.Sprintf("\t\"%s\"[shape=box, style=\"rounded,filled\", fillcolor=\"aquamarine\", color=black];\n", target))
 
 		if err != nil {
 			return err
 		}
-		targettuples := getTuplesFortarget(target, tuples)
+		targettuples := getTuplesForTarget(target, tuples)
+
 		// loop over the tuples and write the edge lines
 		for _, tuple := range targettuples {
+			if done.Has(tuple) {
+				continue
+			}
+			done.Insert(tuple)
+
 			_, err = writer.WriteString(fmt.Sprintf("\t\"%s\" -> \"%s\";\n", tuple[0], tuple[1]))
 			if err != nil {
 				return err
@@ -303,8 +323,8 @@ func getTuplesForCaller(caller string, tuples [][2]string) [][2]string {
 	return result
 }
 
-// getTuplesFortarget returns an array of tuples where the target is the second element of the tuple
-func getTuplesFortarget(target string, tuples [][2]string) [][2]string {
+// getTuplesForTarget returns an array of tuples where the target is the second element of the tuple
+func getTuplesForTarget(target string, tuples [][2]string) [][2]string {
 	result := make([][2]string, 0)
 	for _, tuple := range tuples {
 		if tuple[1] == target {
