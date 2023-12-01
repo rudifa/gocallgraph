@@ -4,13 +4,15 @@ Copyright © 2023 Rudolf Farkas @rudifa rudi.farkas@gmail.com
 package main
 
 import (
+	"fmt"
+
 	"github.com/rudifa/gocallgraph/cmd"
 )
 
 func main() {
 	cmd.Execute()
-	// fib := fibonacci(5)
-	// fmt.Println(fib)
+	fib := fibonacci(5)
+	fmt.Println(fib)
 }
 
 func fibonacci(n int) int {
